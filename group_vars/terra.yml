@@ -6,6 +6,7 @@ cl_username: terrauser
 cl_moniker: moniker
 cl_quicksync: default # choose between pruned, default, archive or none(sync from scratch)
 cl_download_dir: "/home/{{ cl_username }}"
+
 #
 # Optional values
 #
@@ -13,13 +14,14 @@ cl_download_dir: "/home/{{ cl_username }}"
 # cl_persistent_peer: '' # not used if not supplied
 # ansible_port: 22 # default 22
 # ansible_user: root # default current username
+
 #
 # No need to edit anything below
 #
 cl_go_url: https://dl.google.com/go/go1.13.12.linux-amd64.tar.gz
 cl_go_sha: 9cacc6653563771b458c13056265aa0c21b8a23ca9408278484e4efde4160618
 cl_network: terra
-cl_service_homedir: .terrad
+cl_service_homedir: "/home/{{ cl_username }}/.terrad"
 cl_service_executable: terrad
 cl_service: terrad
 cl_service_full: terrad.service
@@ -30,6 +32,3 @@ cl_repository: terra-project/core/
 cl_version: v0.3.5
 cl_seeds: 6be0856f6365559fdc2e9e97a07d609f754632b0@terra-columbus-3-seed.nodes.polychainlabs.com:26656,bae08cc880c20aeda68a5a890a71a9b44ac73cb4@terra-seed-eu.chorus.one:28657,87048bf71526fb92d73733ba3ddb79b7a83ca11e@public-seed.terra.dev:26656,b5205baf1d52b6f91afb0da7d7b33dcebc71755f@public-seed2.terra.dev:26656,5fa582d7c9931e5be8c02069d7b7b243c79d25bf@seed.terra.de-light.io:26656
 cl_addressbook: https://network.terra.dev/addrbook.json
-
-ansible_port: 22 # default 22
-ansible_user: root # default current username

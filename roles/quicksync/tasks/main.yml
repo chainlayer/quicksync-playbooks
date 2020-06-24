@@ -88,7 +88,7 @@
 - name: Init chain
   shell: "source /home/{{ cl_username }}/.profile && {{ cl_service_executable }} init {{ cl_moniker }} --chain-id {{ cl_chain_id }}"
   args:
-    creates: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/genesis.json"
+    creates: "{{ cl_service_homedir }}/config/genesis.json"
     executable: /bin/bash
     chdir: "/home/{{ cl_username }}/"
     warn: no
@@ -97,7 +97,7 @@
 
 - name: Delete Genesis
   file:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/genesis.json"
+    path: "{{ cl_service_homedir }}/config/genesis.json"
     state: 'absent'
 
 - name: Download Genesis
@@ -105,7 +105,7 @@
     url: "{{ cl_genesis }}"
     owner: "{{ cl_username }}"
     group: "{{ cl_username }}"
-    dest: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/genesis.json"
+    dest: "{{ cl_service_homedir }}/config/genesis.json"
     mode: '0640'
 
 - name: Download Addressbook
@@ -113,13 +113,13 @@
     url: "{{ cl_addressbook }}"
     owner: "{{ cl_username }}"
     group: "{{ cl_username }}"
-    dest: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/addrbook.json"
+    dest: "{{ cl_service_homedir }}/config/addrbook.json"
     mode: '0640'
 
 - name: Backup config
-  shell: "cp /home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml /home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml.backup"
+  shell: "cp {{ cl_service_homedir }}/config/config.toml {{ cl_service_homedir }}/config/config.toml.backup"
   args:
-    creates: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml.backup"
+    creates: "{{ cl_service_homedir }}/config/config.toml.backup"
     executable: /bin/bash
     chdir: "/home/{{ cl_username }}/"
     warn: no
@@ -129,35 +129,35 @@
 
 - name: add persistent_peers
   lineinfile:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    path: "{{ cl_service_homedir }}/config/config.toml"
     regexp: '^persistent_peers'
     line: 'persistent_peers = "{{ cl_persistent_peer }}"'
   when: cl_persistent_peer is defined
 
 - name: add private_peers
   lineinfile:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    path: "{{ cl_service_homedir }}/config/config.toml"
     regexp: '^private_peer_ids'
     line: 'private_peer_ids = "{{ cl_private_peer }}"'
   when: cl_private_peer is defined
 
 - name: add seeds
   lineinfile:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    path: "{{ cl_service_homedir }}/config/config.toml"
     regexp: '^seeds'
     line: 'seeds = "{{ cl_seeds  }}"'
   when: cl_seeds is defined
 
 - name: update indexer
   lineinfile:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    path: "{{ cl_service_homedir }}/config/config.toml"
     regexp: '^indexer'
     line: 'indexer = "kv"'
   when: cl_quicksync == 'archive'
 
 - name: update indexer
   lineinfile:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    path: "{{ cl_service_homedir }}/config/config.toml"
     regexp: '^indexer'
     line: 'indexer = "null"'
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default'
@@ -228,14 +228,14 @@
 
 - name: Delete data dir before unpacking
   file:
-    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/data"
+    path: "{{ cl_service_homedir }}/data"
     state: absent
 
 - name: Extract Quicksync File
   shell: "tar -I lz4 -xf {{ cl_download_dir }}/{{ cl_filename.stdout }}"
   args:
     executable: /bin/bash
-    chdir: "/home/{{ cl_username }}/{{ cl_service_homedir }}/"
+    chdir: "{{ cl_service_homedir }}/"
     warn: no
   become: yes
   become_user: "{{ cl_username }}"
