@@ -1,0 +1,6 @@
+all:
+  children:
+    terra:
+      hosts:
+        terra-host01:
+          ansible_host: <your hostname here>

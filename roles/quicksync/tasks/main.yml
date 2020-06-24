@@ -1,0 +1,249 @@
+- name: "Add user {{ cl_username }}"
+  user:
+    name: "{{ cl_username }}"
+    shell: /bin/bash
+
+- name: install packages
+  apt:
+    pkg:
+    - wget
+    - liblz4-tool
+    - aria2
+    - jq
+
+- name: Update .profile
+  blockinfile:
+    path: /home/{{ cl_username }}/.profile
+    owner: "{{ cl_username }}"
+    group: "{{ cl_username }}"
+    create: yes
+    mode: "644"
+    block: |
+      GOPATH="$HOME/go"
+      PATH="$GOPATH/bin:$PATH"
+      PATH="$PATH:/usr/local/go/bin"
+
+- name: Get files from github
+  git:
+    repo: "https://github.com/{{ cl_repository }}"
+    dest: "/home/{{ cl_username }}/go/src/github.com/{{ cl_repository }}"
+    version: "{{ cl_version }}"
+    force: yes
+  become: yes
+  become_user: "{{ cl_username }}"
+
+- name: Create GOBIN directory if it does not exist
+  file:
+    path: "/home/{{ cl_username }}/go/bin"
+    owner: "{{ cl_username }}"
+    group: "{{ cl_username }}"
+    state: directory
+    mode: '0775'
+
+- name: Download Go
+  get_url:
+    url: "{{ cl_go_url }}"
+    dest: "/root"
+    checksum: "sha256:{{ cl_go_sha }}"
+  register: dl_go
+  become: yes
+  become_user: root
+
+- name: Extract Go
+  unarchive:
+    src: "{{ dl_go.dest }}"
+    remote_src: yes
+    dest: /usr/local/
+  become: yes
+  become_user: root
+
+- name: Install dep
+  shell: "source /home/{{ cl_username }}/.profile && curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh"
+  args:
+    creates: "/home/{{ cl_username }}/go/bin/dep"
+    executable: /bin/bash
+    chdir: "/home/{{ cl_username }}/"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+
+- name: Populate service facts
+  service_facts:
+
+- name: stop service if exists
+  systemd:
+    name: "{{ cl_service }}"
+    state: stopped
+  when: cl_service_full in ansible_facts.services
+
+- name: Make install
+  shell: "source /home/{{ cl_username }}/.profile && make install"
+  args:
+    executable: /bin/bash
+    chdir: "/home/{{ cl_username }}/go/src/github.com/{{ cl_repository }}"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+
+- name: Init chain
+  shell: "source /home/{{ cl_username }}/.profile && {{ cl_service_executable }} init {{ cl_moniker }} --chain-id {{ cl_chain_id }}"
+  args:
+    creates: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/genesis.json"
+    executable: /bin/bash
+    chdir: "/home/{{ cl_username }}/"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+
+- name: Delete Genesis
+  file:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/genesis.json"
+    state: 'absent'
+
+- name: Download Genesis
+  get_url:
+    url: "{{ cl_genesis }}"
+    owner: "{{ cl_username }}"
+    group: "{{ cl_username }}"
+    dest: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/genesis.json"
+    mode: '0640'
+
+- name: Download Addressbook
+  get_url:
+    url: "{{ cl_addressbook }}"
+    owner: "{{ cl_username }}"
+    group: "{{ cl_username }}"
+    dest: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/addrbook.json"
+    mode: '0640'
+
+- name: Backup config
+  shell: "cp /home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml /home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml.backup"
+  args:
+    creates: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml.backup"
+    executable: /bin/bash
+    chdir: "/home/{{ cl_username }}/"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+
+
+- name: add persistent_peers
+  lineinfile:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    regexp: '^persistent_peers'
+    line: 'persistent_peers = "{{ cl_persistent_peer }}"'
+  when: cl_persistent_peer is defined
+
+- name: add private_peers
+  lineinfile:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    regexp: '^private_peer_ids'
+    line: 'private_peer_ids = "{{ cl_private_peer }}"'
+  when: cl_private_peer is defined
+
+- name: add seeds
+  lineinfile:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    regexp: '^seeds'
+    line: 'seeds = "{{ cl_seeds  }}"'
+  when: cl_seeds is defined
+
+- name: update indexer
+  lineinfile:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    regexp: '^indexer'
+    line: 'indexer = "kv"'
+  when: cl_quicksync == 'archive'
+
+- name: update indexer
+  lineinfile:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/config/config.toml"
+    regexp: '^indexer'
+    line: 'indexer = "null"'
+  when: cl_quicksync == 'pruned' or cl_quicksync == 'default'
+
+- name: Init Gaiad
+  shell: "source /home/{{ cl_username }}/.profile && {{ cl_client_executable }} config node http://127.0.0.1:26657 && {{ cl_client_executable }} config chain-id {{ cl_chain_id }}"
+  args:
+    executable: /bin/bash
+    chdir: "/home/{{ cl_username }}/"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+
+- name: Create Systemd file
+  template:
+    src: "files/{{ cl_service_full }}"
+    dest: "/etc/systemd/system/{{ cl_service_full }}"
+
+-  name: Get download filename
+   shell: "curl -s https://terra.quicksync.io/sync.json|jq -r '.[]| select(.network==\"{{ cl_quicksync }}\")|.file'"
+   register: cl_filename
+
+- name: Download Quicksync File
+  shell: "aria2c -x5 https://get.quicksync.io/{{ cl_filename.stdout }} > aria.log"
+  args:
+    executable: /bin/bash
+    chdir: "{{ cl_download_dir }}"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+  when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+
+- name: Download Quicksync Checksum
+  shell: "wget https://get.quicksync.io/{{ cl_filename.stdout }}.checksum"
+  args:
+    executable: /bin/bash
+    chdir: "{{ cl_download_dir }}"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+  when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+
+- name: Check hash of checksum file
+  shell: "curl -s https://lcd.terra.dev/txs/`curl -s https://get.quicksync.io/{{ cl_filename.stdout }}.hash`|jq -r '.tx.value.memo'|sha512sum -c"
+  args:
+    executable: /bin/bash
+    chdir: "{{ cl_download_dir }}"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+  when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+
+- name: Copy checksum tool
+  copy:
+    src: "checksum.sh"
+    dest: "{{ cl_download_dir }}"
+    mode: '0775'
+
+- name: Checksum Quicksync File
+  shell: "./checksum.sh {{ cl_filename.stdout }}"
+  args:
+    executable: /bin/bash
+    chdir: "{{ cl_download_dir }}"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+  when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+
+- name: Delete data dir before unpacking
+  file:
+    path: "/home/{{ cl_username }}/{{ cl_service_homedir }}/data"
+    state: absent
+
+- name: Extract Quicksync File
+  shell: "tar -I lz4 -xf {{ cl_download_dir }}/{{ cl_filename.stdout }}"
+  args:
+    executable: /bin/bash
+    chdir: "/home/{{ cl_username }}/{{ cl_service_homedir }}/"
+    warn: no
+  become: yes
+  become_user: "{{ cl_username }}"
+  when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+
+- name: enable and start gaia!
+  systemd:
+    name: "{{ cl_service }}"
+    state: started
+    daemon_reload: yes
+    enabled: yes

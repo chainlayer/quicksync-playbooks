@@ -1,0 +1,4 @@
+---
+- hosts: terra
+  roles:
+    - { role: quicksync, become: yes }

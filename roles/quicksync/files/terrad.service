@@ -1,0 +1,15 @@
+[Unit]
+Description=Terra Node
+After=network.target
+
+[Service]
+Type=simple
+User={{ cl_username }}
+WorkingDirectory=/home/{{ cl_username }}
+ExecStart=/home/{{ cl_username }}/go/bin/{{ cl_service_executable }} start {{ cl_chain_id }}
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

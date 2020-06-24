@@ -1,0 +1,2 @@
+#!/bin/bash
+ansible-playbook -i ansible-hosts.yml quicksync.yml -l terra
