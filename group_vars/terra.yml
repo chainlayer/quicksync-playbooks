@@ -4,7 +4,7 @@
 #
 cl_username: terrauser
 cl_moniker: moniker
-cl_quicksync: default # choose between pruned, default, archive or none(sync from scratch)
+cl_quicksync: pruned # choose between pruned, default, archive or none(sync from scratch)
 cl_download_dir: "/home/{{ cl_username }}"
 
 #

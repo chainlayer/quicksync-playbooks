@@ -9,6 +9,9 @@ Playbooks to install a terrad node with Chainlayer Quicksync
 ```
 git clone https://github.com/chainlayer/quicksync-playbooks.git
 # edit group_vars/terra.yml file
+vim group_vars/terra.yml
+# edit ansible-hosts.yml file
+vim ansible-hosts.yml
 cd quicksync-playbooks
 ./quicksync
 ```
