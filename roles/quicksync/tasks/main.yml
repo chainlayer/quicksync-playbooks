@@ -6,6 +6,13 @@
 - name: install packages
   apt:
     pkg:
+    - make
+    - gcc
+    - libhidapi-dev
+    - g++
+    - build-essential
+    - git
+    - python
     - wget
     - liblz4-tool
     - aria2
