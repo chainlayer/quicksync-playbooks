@@ -196,6 +196,8 @@
   become: yes
   become_user: "{{ cl_username }}"
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+  async: 7200
+  poll: 60
 
 - name: Download Quicksync Checksum
   shell: "wget https://get.quicksync.io/{{ cl_filename.stdout }}.checksum"
@@ -247,6 +249,9 @@
   become: yes
   become_user: "{{ cl_username }}"
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
+  async: 7200
+  poll: 60
+
 
 - name: enable and start gaia!
   systemd:
