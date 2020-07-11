@@ -188,7 +188,7 @@
    register: cl_filename
 
 - name: Download Quicksync File
-  shell: "aria2c -x5 https://get.quicksync.io/{{ cl_filename.stdout }} > aria.log"
+  shell: "aria2c --continue -x5 https://get.quicksync.io/{{ cl_filename.stdout }} > aria.log"
   args:
     executable: /bin/bash
     chdir: "{{ cl_download_dir }}"
