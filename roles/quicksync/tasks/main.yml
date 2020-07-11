@@ -196,7 +196,7 @@
   become: yes
   become_user: "{{ cl_username }}"
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
-  async: 7200
+  async: 72000
   poll: 60
 
 - name: Download Quicksync Checksum
@@ -249,7 +249,7 @@
   become: yes
   become_user: "{{ cl_username }}"
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
-  async: 7200
+  async: 72000
   poll: 60
 
 
