@@ -4,6 +4,7 @@ Playbooks to install a terrad node with Chainlayer Quicksync
 ## Prerequisites
 - on your local machine install ansible
 - make sure you have ssh-key access to the target machine with either root or a user with sudo rights
+- Terra Columbus 4 is heavy on the memory requirements, add at least 12Gb or preferable 16Gb to your server
 
 ## Usage
 ```
@@ -23,9 +24,9 @@ If for whatever reason the download is cancelled, you can resume it manually (as
 ```
 sudo su - terrauser
 cd /home/terrauser
-aria2c --continue -x 5 https://get.quicksync.io/columbus-3-pruned.latest.tar.lz4
+aria2c --continue -x 5 https://get.quicksync.io/columbus-4-pruned.DATE.TIME.tar.lz4
 cd .terrad
-tar -I lz4 -xf /home/terrauser/columbus-3-pruned.latest.tar.lz4
+tar -I lz4 -xf /home/terrauser/columbus-4-pruned.DATE.TIME.tar.lz4
 exit
 # enable and start terrad with sudo
 sudo systemctl enable terrad

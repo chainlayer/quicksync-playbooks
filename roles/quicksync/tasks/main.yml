@@ -47,6 +47,11 @@
     state: directory
     mode: '0775'
 
+- name: Delete go install dir before unpacking
+  file:
+    path: "/usr/local/go"
+    state: absent
+
 - name: Download Go
   get_url:
     url: "{{ cl_go_url }}"
@@ -184,7 +189,7 @@
     dest: "/etc/systemd/system/{{ cl_service_full }}"
 
 -  name: Get download filename
-   shell: "curl -s https://terra.quicksync.io/sync.json|jq -r '.[]| select(.network==\"{{ cl_quicksync }}\")|.file'"
+   shell: "curl -s https://terra.quicksync.io/sync.json|jq -r '.[]| select(.network==\"{{ cl_quicksync }}\")|.file'|head -1"
    register: cl_filename
 
 - name: Download Quicksync File
@@ -197,7 +202,7 @@
   become_user: "{{ cl_username }}"
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
   async: 72000
-  poll: 60
+  poll: 10
 
 - name: Download Quicksync Checksum
   shell: "wget https://get.quicksync.io/{{ cl_filename.stdout }}.checksum"
@@ -250,8 +255,7 @@
   become_user: "{{ cl_username }}"
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default' or cl_quicksync == 'archive'
   async: 72000
-  poll: 60
-
+  poll: 10
 
 - name: enable and start gaia!
   systemd:
