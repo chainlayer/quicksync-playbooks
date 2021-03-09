@@ -18,8 +18,8 @@ cl_download_dir: "/home/{{ cl_username }}"
 #
 # No need to edit anything below
 #
-cl_go_url: https://golang.org/dl/go1.14.9.linux-amd64.tar.gz
-cl_go_sha: f0d26ff572c72c9823ae752d3c81819a81a60c753201f51f89637482531c110a
+cl_go_url: https://golang.org/dl/go1.15.3.linux-amd64.tar.gz
+cl_go_sha: 010a88df924a81ec21b293b5da8f9b11c176d27c0ee3962dc1738d2352d3c02d
 cl_network: terra
 cl_service_homedir: "/home/{{ cl_username }}/.terrad"
 cl_service_executable: terrad
@@ -29,6 +29,6 @@ cl_client_executable: terracli
 cl_chain_id: columbus-4
 cl_genesis: https://get.quicksync.io/genesis/columbus-4-genesis.json
 cl_repository: terra-project/core/
-cl_version: v0.4.0
+cl_version: v0.4.2
 cl_seeds: 925ecc3de9e2ac65a203beb2333ced1a00c135ed@terra-seed-us.chorus.one:28657,87048bf71526fb92d73733ba3ddb79b7a83ca11e@public-seed.terra.dev:26656,b5205baf1d52b6f91afb0da7d7b33dcebc71755f@public-seed2.terra.dev:26656,5fa582d7c9931e5be8c02069d7b7b243c79d25bf@seed.terra.de-light.io:26656,bae08cc880c20aeda68a5a890a71a9b44ac73cb4@terra-seed-eu.chorus.one:28657
 cl_addressbook: https://network.terra.dev/addrbook.json
