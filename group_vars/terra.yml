@@ -25,7 +25,7 @@ cl_service_homedir: "/home/{{ cl_username }}/.terra"
 cl_service_executable: terrad
 cl_service: terrad
 cl_service_full: terrad.service
-cl_client_executable: terracli
+cl_client_executable: terrad
 cl_chain_id: columbus-5
 cl_genesis: https://get.quicksync.io/genesis/columbus-5-genesis.json
 cl_repository: terra-project/core/

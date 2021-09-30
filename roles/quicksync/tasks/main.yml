@@ -174,22 +174,13 @@
     line: 'indexer = "null"'
   when: cl_quicksync == 'pruned' or cl_quicksync == 'default'
 
-- name: Init Gaiad
-  shell: "source /home/{{ cl_username }}/.profile && {{ cl_client_executable }} config node http://127.0.0.1:26657 && {{ cl_client_executable }} config chain-id {{ cl_chain_id }}"
-  args:
-    executable: /bin/bash
-    chdir: "/home/{{ cl_username }}/"
-    warn: no
-  become: yes
-  become_user: "{{ cl_username }}"
-
 - name: Create Systemd file
   template:
     src: "files/{{ cl_service_full }}"
     dest: "/etc/systemd/system/{{ cl_service_full }}"
 
 -  name: Get download filename
-   shell: "curl -s https://terra.quicksync.io/sync.json|jq -r '.[]| select(.network==\"{{ cl_quicksync }}\")|.file'|head -1"
+   shell: "curl -s https://quicksync.io/terra.json|jq -r '.[]| select(.network==\"{{ cl_quicksync }}\")|.link'|head -1|awk -F\' '{print $2}'|awk -F\/ '{print $4}'"
    register: cl_filename
 
 - name: Download Quicksync File
