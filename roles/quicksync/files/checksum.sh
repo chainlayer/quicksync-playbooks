@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 FILE=$1
 COMMAND=$2
 
@@ -18,7 +19,9 @@ then
   echo "no file found to checksum"
   exit 1
 fi
-SIZE=`du -Bg $FILE|sed 's/\(\d*\)G.*/\1/'`
+#SIZE=`du -Bg $FILE|sed 's/\(\d*\)G.*/\1/'`
+SIZE=`du -Bm $FILE|sed 's/\(\d*\)M.*/\1/'`
+SIZE=`echo "$SIZE / 1024"|bc`
 
 if [ "$COMMAND" == "create" ]
 then
