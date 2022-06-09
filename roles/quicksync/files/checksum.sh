@@ -35,7 +35,7 @@ elif [ -f ${FILE}.checksum -a "$COMMAND" == "check" ]
 then
   for((i=1;i<=$SIZE;++i)) do
     CHECKSUM=`dd bs=1M skip=$((1024*$i)) count=1 if=$FILE 2>/dev/null | sha512sum |awk '{print $1}'`
-    LINE=`grep -n $CHECKSUM ${FILE}.checksum|awk -F\: '{print $1}'`
+    LINE=`grep -n $CHECKSUM ${FILE}.checksum|awk -F\: '{print $1}'|grep $i`
     if [ "$LINE" != "$i" ]
     then
       echo "CHECKSUM FAILED"
