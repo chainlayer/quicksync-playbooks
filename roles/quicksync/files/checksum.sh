@@ -22,6 +22,7 @@ fi
 #SIZE=`du -Bg $FILE|sed 's/\(\d*\)G.*/\1/'`
 SIZE=`du -Bm $FILE|sed 's/\(\d*\)M.*/\1/'`
 SIZE=`echo "$SIZE / 1024"|bc`
+EMPTY_HASH=$(echo -n '' | sha512sum | cut -d ' ' -f 1)
 
 if [ "$COMMAND" == "create" ]
 then
@@ -33,9 +34,15 @@ then
   exit 0
 elif [ -f ${FILE}.checksum -a "$COMMAND" == "check" ]
 then
+  LINES_IN_CHECKSUM=$(wc -l ${FILE}.checksum|cut -d ' ' -f 1)
   for((i=1;i<=$SIZE;++i)) do
     CHECKSUM=`dd bs=1M skip=$((1024*$i)) count=1 if=$FILE 2>/dev/null | sha512sum |awk '{print $1}'`
     LINE=`grep -n $CHECKSUM ${FILE}.checksum|awk -F\: '{print $1}'|grep $i`
+    if [ "$i" -gt "$LINES_IN_CHECKSUM" ] && [ "$CHECKSUM" == "$EMPTY_HASH" ]
+    then
+      # reached end of checksum file, but still hashing. if hashing empty data, we're all set!
+      break
+    fi
     if [ "$LINE" != "$i" ]
     then
       echo "CHECKSUM FAILED"
